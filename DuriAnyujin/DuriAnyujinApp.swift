@@ -15,7 +15,7 @@ struct DuriAnyujinApp: App {
         WindowGroup {
             ZStack {
                 if isActive {
-                    MainPageView() // 실제 메인 페이지
+                    LoginPageView() // 실제 메인 페이지
                 } else {
                     SplashView() // 스플래시 화면 뷰
                         .onAppear {
