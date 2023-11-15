@@ -43,16 +43,13 @@ struct LoginPageView: View {
                         case .success(let authResults):
                             switch authResults.credential {
                             case let appleIDCredential as ASAuthorizationAppleIDCredential:
-                                // 유저의 유니크 ID
-                                let userIdentifier = appleIDCredential.user
-                                // 유저의 이메일
-                                let useremail = appleIDCredential.email
-                                // 유저의 전체 이름
-                                let fullName = appleIDCredential.fullName
-                                
-                                // 여기서 인증 정보를 사용하여 앱 내 로그인 처리
-                                // 예를 들어, 서버로 인증 정보를 보내 사용자를 인증
-                                
+                                if let authorizationCodeData = appleIDCredential.authorizationCode,
+                                   let authorizationCode = String(data: authorizationCodeData, encoding: .utf8),
+                                   let idTokenData = appleIDCredential.identityToken,
+                                   let idTokenString = String(data: idTokenData, encoding: .utf8) {
+                                    // 서버에 authorizationCode와 idToken을 전송합니다.
+                                    sendAuthorizationCodeToServer(authorizationCode, idToken: idTokenString)
+                                }
                             default:
                                 break
                             }
@@ -85,6 +82,38 @@ struct LoginPageView: View {
         }
     }
 }
+
+func sendAuthorizationCodeToServer(_ authorizationCode: String, idToken: String) {
+    guard let url = URL(string: "https://d58d16dc-927a-4464-aae0-af8ec0ebd302.mock.pstmn.io") else { return }
+
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+    let body: [String: Any] = [
+        "authorizationCode": authorizationCode,
+        "idToken": idToken
+    ]
+
+    request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+    
+    URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            // 오류 처리
+            print("Error sending authorization code: \(error)")
+            return
+        }
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            // 서버 응답 오류 처리
+            print("Invalid response from server")
+            return
+        }
+        
+        // 성공적인 응답 처리
+        // 예: 서버로부터 받은 토큰을 저장하거나 UI를 업데이트
+    }.resume()
+}
+
 
 struct LoginPageView_Previews: PreviewProvider {
     static var previews: some View {
