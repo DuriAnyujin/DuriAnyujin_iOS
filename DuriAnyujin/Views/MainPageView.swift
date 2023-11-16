@@ -9,7 +9,10 @@ import SwiftUI
 
 struct MainPageView: View {
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        NavigationView {
+            Text("안녕? 나 메인페이지.")
+                .navigationTitle("메인페이지")
+        }
     }
 }
 
